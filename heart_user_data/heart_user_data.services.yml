@@ -1,0 +1,4 @@
+services:
+  heart_user_data.user_ref_data:
+    class: Drupal\heart_user_data\UserRefData
+    arguments: ['@entity_type.manager','@database']

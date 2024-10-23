@@ -1,0 +1,30 @@
+<?php
+
+/**
+ * @file
+ * Module for heart_user_data.
+ *
+ * This file contains the implementation of the heart_user_data module.
+ */
+
+declare(strict_types=1);
+
+use Drupal\Core\Entity\EntityInterface;
+
+/**
+ * Pre delete event handler.
+ */
+function heart_user_data_entity_predelete(EntityInterface $entity) {
+  try {
+    $id = $entity->id();
+    $entity_type_id = $entity->getEntityTypeId();
+    // Get the database connection.
+    $database = \Drupal::database();
+    // Delete related user ref data entities from the custom table.
+    $database->delete('heart_user_ref_data')->condition('ref_entity_type', $entity_type_id)->condition('ref_entity_id', $id)->execute();
+  }
+  catch (\Exception $e) {
+    // Handle exceptions here.
+    \Drupal::logger('heart_user_data')->error('Error occurred during pre-delete event: @message', ['@message' => $e->getMessage()]);
+  }
+}

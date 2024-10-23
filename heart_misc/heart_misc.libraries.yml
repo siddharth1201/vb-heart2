@@ -1,0 +1,13 @@
+heart_misc:
+  js:
+    js/CustomResourceLibrary.js: {}
+    js/pageSorting.js: {}
+    js/jquery-ui.js: {}
+  dependencies:
+    - core/jquery
+    - core/jquery.ui.dialog
+    - jquery_once/jquery.once
+  css:
+    theme:
+      css/ResourceLibrary.css: {}
+      css/misc.css: {}

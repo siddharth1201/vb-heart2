@@ -1,0 +1,10 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - heart_zoom
+id: heart_zoom_webinars_save_action
+label: 'Save zoom webinarss'
+type: heart_zoom_webinars
+plugin: entity:save_action:heart_zoom_webinars
+configuration: {  }

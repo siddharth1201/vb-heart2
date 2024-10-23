@@ -1,0 +1,5 @@
+name: "Heart User Data"
+type: module
+description: "This module will be used to perform CRUD operations on user entity references."
+package: Custom
+core_version_requirement: ^10 || ^11

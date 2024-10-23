@@ -1,0 +1,79 @@
+heart_zoom.heart_zoom_entity_update:
+  path: '/heart-zoom/heart-zoom-entity-update'
+  defaults:
+    _title: 'Heart Zoom Entity Update'
+    _controller: '\Drupal\heart_zoom\Controller\HeartZoomEntityUpdateController::updateZoomProfileEntity'
+  requirements:
+    _permission: 'access content'
+
+heart_zoom.heart_zoom_api_test:
+  path: '/heart-zoom/heart-zoom-api'
+  defaults:
+    _title: 'Heart Zoom Api Call'
+    _controller: '\Drupal\heart_zoom\Controller\HeartZoomApiController::testApi'
+  requirements:
+    _permission: 'access content'
+
+heart_zoom.heart_zoom_delete_webinar:
+  path: '/heart-zoom/heart-zoom-delete-webinar'
+  defaults:
+    _title: 'Heart Zoom Delete Webinar'
+    _controller: '\Drupal\heart_zoom\Controller\HeartZoomApiController::deleteWebinar'
+  requirements:
+    _permission: 'administrator+content_editor'
+
+heart_zoom.heart_zoom_delete_report:
+  path: '/heart-zoom/heart-zoom-delete-report'
+  defaults:
+    _title: 'Heart Zoom Delete Report'
+    _controller: '\Drupal\heart_zoom\Controller\HeartZoomApiController::deleteReport'
+  requirements:
+    _permission: 'access content'
+
+heart_zoom.heart_schedule:
+  path: '/zoom-schedule'
+  defaults:
+    _form: '\Drupal\heart_zoom\Form\ScheduleWebinarForm'
+    _title: 'Heart Schedule Webinar'
+  requirements:
+    _permission: 'administrator+content_editor'
+
+heart_zoom.edit_heart_schedule:
+  path: '/manage-content/edit-zoom-schedule/{webinar_id}/{entity_id}'
+  defaults:
+    _form: '\Drupal\heart_zoom\Form\ScheduleWebinarForm'
+    _title: 'Edit Zoom Webinar'
+  requirements:
+    _permission: 'administrator content_editor'
+
+entity.heart_zoom_webinars.settings:
+  path: 'admin/structure/heart-zoom-webinars'
+  defaults:
+    _form: '\Drupal\heart_zoom\Form\ZoomWebinarsSettingsForm'
+    _title: 'Zoom Webinars'
+  requirements:
+    _permission: 'administrator+heart_zoom_webinars'
+
+heart_zoom.heart_panelist:
+  path: '/heart-zoom/heart-panelist-webinar/{zoom_id}/{webinar_id}'
+  defaults:
+    _title: 'Heart Zoom Weninar Panelist'
+    _form: '\Drupal\heart_zoom\Form\AddPanelistWebinarForm'
+  requirements:
+    _permission: 'administrator+content_editor'
+
+heart_zoom.edit_heart_panelist:
+  path: '/heart-zoom/heart-edit-panelist-webinar/{zoom_id}/{webinar_id}'
+  defaults:
+    _title: 'Heart Zoom Edit Weninar Panelist'
+    _form: '\Drupal\heart_zoom\Form\AddPanelistWebinarForm'
+  requirements:
+    _permission: 'administrator+content_editor'
+
+heart_zoom.heart_zoom_delete_panelist:
+  path: '/heart-zoom/heart-zoom-delete-panelist'
+  defaults:
+    _title: 'Heart Zoom Delete Panelist'
+    _controller: '\Drupal\heart_zoom\Controller\HeartZoomApiController::deletePanelist'
+  requirements:
+    _permission: 'administrator+content_editor'

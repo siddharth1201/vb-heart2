@@ -1,0 +1,11 @@
+entity.heart_zoom_webinars.settings:
+  title: 'Zoom Webinars'
+  description: 'Configure a Zoom Webinars entity type.'
+  route_name:  entity.heart_zoom_webinars.settings
+  parent: system.admin_structure
+
+entity.heart_zoom_webinars.collection:
+  title: 'Zoom Webinarss'
+  description: 'List of zoom webinarss.'
+  route_name: entity.heart_zoom_webinars.collection
+  parent: system.admin_content

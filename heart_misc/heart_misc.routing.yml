@@ -1,0 +1,41 @@
+heart_misc.diocese_import:
+  path: '/admin/config/system/diocese-import'
+  defaults:
+    _title: 'Diocese import'
+    _form: 'Drupal\heart_misc\Form\DioceseImportForm'
+  requirements:
+    _permission: 'administer site configuration'
+
+heart_misc.heart_action_to_library:
+  path: '/heart-misc/heart-action-to-library'
+  defaults:
+    _title: 'Heart Action To Library'
+    _controller: '\Drupal\heart_misc\Controller\HeartActionToLibrary::actionToLibrary'
+  requirements:
+    _permission: 'access content'
+
+heart_misc.order_payment_data_delete:
+  path: '/heart-misc/delete-order-payment-data'
+  defaults:
+    _title: 'Heart Delete Order Payment Data'
+    _controller: '\Drupal\heart_misc\Controller\HeartActionToLibrary::deleteOrderPaymentData'
+  requirements:
+    _permission: 'access content'
+
+heart_misc.remove_order_item:
+  path: '/remove-order-item/{order_item_id}'
+  defaults:
+    _controller: '\Drupal\heart_misc\Controller\HeartActionToLibrary::removeFromLibrary'
+    _title: 'Remove Order Item'
+  requirements:
+    _permission: 'access content'
+    order_item_id: \d+
+
+heart_misc.heart_my_video_resourse:
+  path: '/my-video-resourse/{product_id}'
+  defaults:
+    _title: 'Heart My Video Resourse'
+    _controller: '\Drupal\heart_misc\Controller\HeartMyVideoResourse::fetchHeartVideoResourceById'
+  requirements:
+    _permission: 'access content overview'
+    product_id: \d+

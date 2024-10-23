@@ -1,0 +1,10 @@
+entity.heart_zoom_webinars.edit_form:
+  route_name: entity.heart_zoom_webinars.edit_form
+  group: heart_zoom_webinars
+  title: 'Edit'
+
+entity.heart_zoom_webinars.delete_form:
+  route_name: entity.heart_zoom_webinars.delete_form
+  group: heart_zoom_webinars
+  title: 'Delete'
+  weight: 10

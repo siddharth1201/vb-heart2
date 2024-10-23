@@ -1,0 +1,11 @@
+heart_misc.diocese_import:
+  title: Diocese import
+  parent: system.admin_config_system
+  route_name: heart_misc.diocese_import
+  weight: 10
+
+heart_misc.manage_access_code:
+  title: Manage Access Code
+  parent: system.admin_config_system
+  url: internal:/access-codes
+  weight: 10

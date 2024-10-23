@@ -1,0 +1,22 @@
+entity.heart_zoom_webinars.settings:
+  title: 'Settings'
+  route_name: entity.heart_zoom_webinars.settings
+  base_route: entity.heart_zoom_webinars.settings
+entity.heart_zoom_webinars.view:
+  title: 'View'
+  route_name: entity.heart_zoom_webinars.canonical
+  base_route: entity.heart_zoom_webinars.canonical
+entity.heart_zoom_webinars.edit_form:
+  title: 'Edit'
+  route_name: entity.heart_zoom_webinars.edit_form
+  base_route: entity.heart_zoom_webinars.canonical
+entity.heart_zoom_webinars.delete_form:
+  title: 'Delete'
+  route_name: entity.heart_zoom_webinars.delete_form
+  base_route: entity.heart_zoom_webinars.canonical
+  weight: 10
+entity.heart_zoom_webinars.collection:
+  title: 'Zoom Webinarss'
+  route_name: entity.heart_zoom_webinars.collection
+  base_route: system.admin_content
+  weight: 10

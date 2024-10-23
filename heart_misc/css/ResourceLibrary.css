@@ -1,0 +1,24 @@
+.more-entity-detail {
+  display: none;
+}
+
+.more-info {
+  display: block;
+}
+
+.less-info {
+  display: none;
+}
+
+.library-login-prompt {
+  display: none;
+}
+
+.library-product-remove-prompt {
+  display: none;
+}
+
+/* .order-total-line__total,
+.order-total-line__adjustment--tax {
+  display: none;
+} */

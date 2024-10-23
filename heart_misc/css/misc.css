@@ -1,0 +1,100 @@
+/*form.views-exposed-form-my-course-page-1 .form-item-keywords-target-id {
+    display: none;
+}*/
+.commerce-checkout-flow-multistep-default .checkout-pane-payment-information-custom #edit-payment-information-custom-add-payment-method.form-wrapper {
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+.credit-card-form .fancy_card_wrapper {
+    padding-top: 40px;
+}
+
+.checkout-pane .credit-card-form {
+    padding: 10px 54% 0 0!important;
+}
+
+.form-item-contact-information-phone label {
+    display: block!important;
+}
+
+.jp-card .jp-card-front {
+    background: #90a1a9!important;
+}
+
+.js-form-item-payment-information-custom-add-payment-method-profile-address-0-address-administrative-area {
+    top: 8px!important;
+}
+
+.pager ul {
+    display: flex!important;
+    gap: 0 4px;
+  }
+  .pager ul li.pager__item {
+    font-size: 12px;
+    justify-content: end;
+    list-style: none;
+    /* justify-content: center; */
+  }
+  .flex-view .pager .pager__items li.is-active a {
+    color: #D67032;
+    background: none;
+  }
+
+  .views-exposed-form-manage-users-block-1 .flex-view-exposed .sort_by .fieldset-wrapper label.active-sort {
+    color: #D67032;
+  }
+  .views-exposed-form-manage-users-block-1 .flex-view-exposed .sort_by .fieldset-wrapper .form-item:nth-child(2) label {
+    display: none;
+  }
+  .views-exposed-form-manage-users-block-1 .flex-view-exposed .sort_by .fieldset-wrapper .form-item:nth-child(4) label {
+    display: none;
+  }
+
+  .views-exposed-form-managing-diocese-block-2 .flex-view-exposed .sort_by .fieldset-wrapper label.active-sort {
+    color: #D67032;
+  }
+  .views-exposed-form-managing-diocese-block-2 .flex-view-exposed .sort_by .fieldset-wrapper .form-item:nth-child(1) label {
+    display: none;
+  }
+  .views-exposed-form-managing-diocese-block-2 .flex-view-exposed .sort_by .fieldset-wrapper .form-item:nth-child(4) label {
+    display: none;
+  }
+
+  .views-exposed-form-manage-parish-default .flex-view-exposed .sort_by .fieldset-wrapper label.active-sort {
+    color: #D67032;
+  }
+  .views-exposed-form-manage-parish-default .flex-view-exposed .sort_by .fieldset-wrapper .form-item:nth-child(1) label {
+    display: none;
+  }
+  .views-exposed-form-manage-parish-default .flex-view-exposed .sort_by .fieldset-wrapper .form-item:nth-child(4) label {
+    display: none;
+  }
+
+  .views-exposed-form-all-classes-default .flex-view-exposed .sort_by .fieldset-wrapper label.active-sort {
+    color: #D67032;
+  }
+  .views-exposed-form-all-classes-default .flex-view-exposed .sort_by .fieldset-wrapper .form-item:nth-child(1) label {
+    display: none;
+  }
+  .views-exposed-form-all-classes-default .flex-view-exposed .sort_by .fieldset-wrapper .form-item:nth-child(4) label {
+    display: none;
+  }
+
+  .flex-view .pager ul.pager__items li a {
+    color: var(--style_gray_700);
+    padding: 0;
+    background: none;
+  }
+
+.views-form-managing-diocese-block-2 .form-item-select-all {
+  display: none;
+}
+
+.views-form-managing-diocese-block-2 .vbo-multipage-selector {
+  display: none;
+}
+
+#vbo-action-form-wrapper .form-actions button.button {
+  margin-top: 20px;
+}

@@ -1,0 +1,5 @@
+name: 'Heart zoom'
+type: module
+description: 'Custom module for Zoom settings.'
+package: 'custom'
+core_version_requirement: ^10

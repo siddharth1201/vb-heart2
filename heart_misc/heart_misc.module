@@ -1,0 +1,841 @@
+<?php
+
+/**
+ * @file
+ * Module for heart_misc.
+ */
+
+use Drupal\commerce_order\Entity\OrderItem;
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\File\FileSystemInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Url;
+use Drupal\file\Entity\File;
+use Drupal\node\NodeInterface;
+use Drupal\views\ViewExecutable;
+use Mpdf\Mpdf;
+use Mpdf\Output\Destination;
+
+/**
+ * Implements hook_views_pre_render().
+ */
+function heart_misc_views_pre_render(ViewExecutable $view) {
+  // Check if the view is the one we want to target.
+  if ($view->id() == 'resource_library') {
+    // Attach the library to the view.
+    $view->element['#attached']['library'][] = 'heart_misc/heart_misc';
+  }
+  if ($view->id() == 'video_library') {
+    // Attach the library to the view.
+    $view->element['#attached']['library'][] = 'heart_misc/heart_misc';
+  }
+  if ($view->id() == 'my_register_events') {
+    // Attach the library to the view.
+    $view->element['#attached']['library'][] = 'heart_misc/heart_misc';
+  }
+
+  if ($view->id() == 'my_resource_library') {
+    $view->element['#attached']['library'][] = 'heart_misc/heart_misc';
+  }
+
+  if ($view->storage->id() == 'duplicate_of_order_items') {
+    // Get views results.
+    $orderItems = $view->result;
+    $filteredOrderItems = [];
+    $orderItemIdsPresent = [];
+
+    foreach ($orderItems as $key => $orderItem) {
+      // Get the order_item_id from the relationship entities.
+      $order_item_id = $orderItem->order_item_id;
+
+      // Check if the order_item_id is already in the array of unique order_ids.
+      if (!in_array($order_item_id, $orderItemIdsPresent)) {
+        // If not, add result to filteredOrderItems and add order_id to the array.
+        $filteredOrderItems[] = $orderItem;
+        $orderItemIdsPresent[] = $order_item_id;
+      }
+    }
+
+    // Important to set index values for view results rendering.
+    foreach ($filteredOrderItems as $key => $row) {
+      $row->index = $key;
+    }
+
+    // Update the view results with the filtered results.
+    $view->result = $filteredOrderItems;
+    $view->total_rows = count($filteredOrderItems);
+  }
+
+  if ($view->storage->id() == 'my_orders') {
+    // Get views results.
+    $orders = $view->result;
+    $filteredOrders = [];
+    $orderIdsPresent = [];
+
+    foreach ($orders as $key => $order) {
+      // Get the order_id from the relationship entities.
+      $order_id = $order->profile_commerce_order_profile_id;
+
+      // Check if the order_id is already in the array of unique order_ids.
+      if (!in_array($order_id, $orderIdsPresent)) {
+        // If not, add result to filteredResults and add order_id to the array.
+        $filteredOrders[] = $order;
+        $orderIdsPresent[] = $order_id;
+      }
+    }
+
+    // Important to set index values for view results rendering.
+    foreach ($filteredOrders as $key => $row) {
+      $row->index = $key;
+    }
+
+    // Update the view results with the filtered results.
+    $view->result = $filteredOrders;
+    $view->total_rows = count($filteredOrders);
+  }
+
+  if ($view->storage->id() == 'commerce_checkout_order_summary') {
+    // Get views results.
+    $cartItems = $view->result;
+    $filteredItems = [];
+    $itemIdsPresent = [];
+
+    foreach ($cartItems as $key => $item) {
+      // Get the order_id from the relationship entities.
+      $item_id = $item->commerce_order_item_commerce_order__order_items_order_item_i;
+
+      // Check if the order_id is already in the array of unique order_ids.
+      if (!in_array($item_id, $itemIdsPresent)) {
+        // If not, add result to filteredResults and add order_id to the array.
+        $filteredItems[] = $item;
+        $itemIdsPresent[] = $item_id;
+      }
+    }
+
+    // // Important to set index values for view results rendering.
+    foreach ($filteredItems as $key => $row) {
+      $row->index = $key;
+    }
+
+    // // Update the view results with the filtered results.
+    $view->result = $filteredItems;
+    $view->total_rows = count($filteredItems);
+  }
+
+  // if ($view->storage->id() == 'manage_users' && $view->current_display == 'block_1') {
+  //   // Get views results.
+  //   $users = $view->result;
+  //   $filteredUsers = [];
+  //   $userIdsPresent = [];
+
+  //   foreach ($users as $key => $user) {
+  //     // Get the user_id from the relationship entities.
+  //     $user_id = $user->id;
+
+  //     // Check if the user_id is already in the array of unique user_ids.
+  //     if (!in_array($user_id, $userIdsPresent)) {
+  //       // If not, add result to filteredUsers and add user_id to the array.
+  //       $filteredUsers[] = $user;
+  //       $userIdsPresent[] = $user_id;
+  //     }
+  //   }
+
+  //   // Important to set index values for view results rendering.
+  //   foreach ($filteredUsers as $key => $row) {
+  //     $row->index = $key;
+  //   }
+
+  //   // Update the view results with the filtered results.
+  //   $view->result = $filteredUsers;
+  //   $view->total_rows = count($filteredUsers);
+  // }
+}
+
+/**
+ * Implements hook_preprocess_views_view().
+ */
+function heart_misc_preprocess_views_view(&$variables) {
+  // Check if the view is the one we want to target.
+  if ($variables['view']->id() == 'rl_library') {
+    // Attach the CSS file to the view.
+    $variables['#attached']['library'][] = 'heart_misc/heart_misc';
+  }
+}
+
+/**
+ * Add form display dependencies.
+ */
+function heart_misc_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Check if the form is the review form.
+  if (isset($form['#step_id']) && $form['#step_id'] == 'review') {
+    // Change titles of the the sections on review page.
+    $form["#title"] = t("Review Order");
+    $form["review_custom"]["#title"] = '';
+    $form['review']["contact_information"]["#title"] = t("Contact Information");
+    $form['review']["billing_information_details"]["#title"] = t("Billing Information");
+  }
+
+  // Check if the form ID starts with 'commerce_order_item_add_to_cart_form'.
+  if (strpos($form_id, 'commerce_order_item_add_to_cart_form') === 0) {
+    // Override the default submit handler.
+    $form['actions']['submit']['#submit'] = ['heart_misc_commerce_cart_redirection_cart_alter_sub'];
+  }
+
+  // Check if the form is the add to cart form.
+  if (isset($form_state->getBuildInfo()['base_form_id']) && $form_state->getBuildInfo()['base_form_id'] == 'commerce_order_item_add_to_cart_form') {
+
+    // Extract the product ID from the form ID.
+    $form_id_parts = explode('_', $form_id);
+    $product_id = end($form_id_parts);
+    // Load the product.
+    $product = \Drupal::entityTypeManager()->getStorage('commerce_product')->load($product_id);
+    // Check if the product is a course.
+    if ($product && $product->type->target_id == 'course') {
+      $course_product_entity = \Drupal::entityTypeManager()->getStorage('course_product')->load($product->field_course_product->target_id);
+      // Check if the course product exist.
+      if ($course_product_entity) {
+        // Load the taxonomy term.
+        $bundle_taxonomy_term = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->load($course_product_entity->module_bundle->target_id);
+        // Change add to cart button text accordingly.
+        if ($bundle_taxonomy_term) {
+          if ($bundle_taxonomy_term->name->value == 'All Modules') {
+            $form['actions']['submit']['#value'] = t('Purchase all module »');
+          }
+          if ($bundle_taxonomy_term->name->value == 'Single Module') {
+            $form['actions']['submit']['#value'] = t('Purchase module »');
+          }
+          if ($bundle_taxonomy_term->name->value == 'three Modules') {
+            $form['actions']['submit']['#value'] = t('Purchase module bundle »');
+          }
+        }
+      }
+    }
+  }
+
+  if (isset($form['#step_id']) && $form['#step_id'] == 'order_information' && $form_id == 'commerce_checkout_flow_multistep_default') {
+    $form['#title'] = t('Check Out');
+    $form['contact_information'][] = [
+      '#type' => 'text',
+      '#title' => t('Phone'),
+      '#default_value' => '',
+    ];
+    if (isset($form['payment_information_custom']['view_heading'])) {
+      $form['payment_information_custom']['#title'] = '';
+      $form['payment_information_custom']['add_payment_method']['payment_details']['type']['#prefix'] = '<h2>' . t('Payment Information') . '</h2>';
+      $form['payment_information_custom']['add_payment_method']['profile']['select_address']['#prefix'] = '<h2>' . t('Billing Address') . '</h2>';
+      $form['payment_information_custom']['add_payment_method']['payment_details']['type']['#default_value'] = 'visa';
+    }
+
+    $form['payment_information_custom']['add_payment_method']['profile']['select_address']['#required'] = TRUE;
+    $form['payment_information_custom']['add_payment_method']['profile']['select_address']['#access'] = TRUE;
+    // dump($form);
+  }
+
+  if ($form_id == 'heart_custom_forms_user_registration') {
+    $route_path = \Drupal::routeMatch()->getRouteObject()->getPath();
+    if ($route_path == "/user-profile/edit") {
+      $form['#suffix'] = '<div class="text-right m-top-5"><a href="/" class="font-size-15 font-style-italic return-home text-secondary">' . t('Return to your Dashboard.') . '</a></div></div>';
+    }
+  }
+}
+
+/**
+ * Custom submit handler to update quantity if the same variation is added.
+ */
+function heart_misc_commerce_cart_redirection_cart_alter_sub(array &$form, FormStateInterface $form_state) {
+  // Get the current path.
+  $current_path = \Drupal::service('path.current')->getPath();
+
+  // No spanish alias.
+  $current_path_alias = \Drupal::service('path_alias.manager')->getPathByAlias($current_path);
+  // Get the current user'scart.
+  $cart_provider = \Drupal::service('commerce_cart.cart_provider');
+  // Get the cart manager service.
+  $cart_manager = \Drupal::service('commerce_cart.cart_manager');
+  // Get the order refresh service.
+  $order_refresh = \Drupal::service('commerce_order.order_refresh');
+  // Get the form values for add to cart form.
+  $values = $form_state->getValues();
+  // Get the variation added to cart.
+  $variation_id = $values['purchased_entity'][0]['variation'];
+  // Intial quantity of product.
+  $quantity_to_add = 1;
+
+  // Get the current user's cart.
+  $cart = $cart_provider->getCart('default');
+  if (!$cart) {
+    $cart = $cart_provider->createCart('default');
+  }
+
+  if ($cart) {
+    // Get the current cart.
+    $order_items = $cart->getItems();
+    // Go through all the items in cart.
+    foreach ($order_items as $order_item) {
+      // Check if current product is already in cart.
+      if ($order_item->getPurchasedEntity()->id() == $variation_id) {
+        // Increment the quantity by 1 if the item is already in the cart.
+        $new_quantity = $order_item->getQuantity() + 1;
+        $order_item->set('quantity', $new_quantity);
+        $order_item->save();
+
+        // Calculate the total after updating the quantity.
+        $order_refresh->refresh($cart);
+        $cart->save();
+
+        // Check if the current path matches the specific pattern.
+        if (!preg_match('/^\/module-catelog\/\d+$/', $current_path_alias) && !preg_match('/^\/module-bundle-catelog\/\d+$/', $current_path_alias) && $current_path_alias != '/resource-library' && $current_path_alias != '/video-library') {
+        // Set redirect to the cart page if the condition is met.
+          $form_state->setRedirect('commerce_cart.page');
+        }
+        return;
+      }
+    }
+  }
+
+  // If the variation is not found in the cart, create a new order item.
+  $purchased_entity = \Drupal::entityTypeManager()->getStorage('commerce_product_variation')->load($variation_id);
+  if ($purchased_entity) {
+    $order_item = OrderItem::create([
+      'type' => 'default',
+      'purchased_entity' => $purchased_entity,
+      'quantity' => $quantity_to_add,
+    ]);
+
+    // Add the new order item to the cart using addOrderItem.
+    $cart_manager->addOrderItem($cart, $order_item);
+    // Check if the current path matches the specific pattern.
+    if (!preg_match('/^\/module-catelog\/\d+$/', $current_path_alias) && !preg_match('/^\/module-bundle-catelog\/\d+$/', $current_path_alias) && $current_path_alias != '/resource-library' && $current_path_alias != '/video-library') {
+      // Set redirect to the cart page if the condition is met.
+      $form_state->setRedirect('commerce_cart.page');
+    }
+  }
+}
+
+/**
+ * Get order item quantity.
+ */
+function heart_misc_get_order_item_quantity($variation_id, $cart_id) {
+  // Get quantity with variation id and cart id.
+  $query = \Drupal::database()->select('commerce_order_item', 'coi')
+    ->fields('coi', ['quantity'])
+    ->condition('coi.order_id', $cart_id)
+    ->condition('coi.purchased_entity', $variation_id)
+    ->execute()
+    ->fetchField();
+  return $query;
+}
+
+/**
+ * Cart view alter.
+ */
+function heart_misc_form_views_form_commerce_cart_form_default_alter(&$form, FormStateInterface $form_state) {
+  $form['actions']['go_back'] = [
+    '#type' => 'link',
+    '#title' => 'Continue shopping',
+    "#weight" => -1,
+    '#url' => Url::fromRoute('<front>'),
+    '#attributes' => ['class' => 'btn btn-primary float-left m-right-auto'],
+  ];
+}
+
+/**
+ * Implements hook_preprocess_page().
+ */
+function heart_misc_preprocess_page(&$variables) {
+  // Get the current route name.
+  $route_name = \Drupal::routeMatch()->getRouteName();
+  // Check if the current page is the specific cart page.
+  if ($route_name == 'commerce_checkout.form' || $route_name == 'commerce_cart.page' || $route_name == 'view.my_course.page_1') {
+    // Attach the custom CSS file to hide the total element.
+    $variables['#attached']['library'][] = 'heart_misc/heart_misc';
+  }
+}
+
+/**
+ * Implements hook_entity_presave().
+ */
+function heart_misc_entity_presave(EntityInterface $entity) {
+  // Check if the entity is an order.
+  $route_name = \Drupal::routeMatch()->getRouteName();
+
+  if ($entity->getEntityTypeId() == 'commerce_order_item' && $entity->bundle() == 'default') {
+    // Get the purchased entity (product variation).
+    $purchased_entity = $entity->getPurchasedEntity();
+    if ($purchased_entity->getEntityTypeId() == 'commerce_product_variation') {
+      // Get the product entity.
+      $product = $purchased_entity->getProduct();
+      if ($product->getEntityTypeId() == 'commerce_product') {
+        // Now you can access product information.
+        if ($product->hasField('field_course_product')) {
+          $entity->set('field_product_type', 'course');
+          $entity->set('field_product', $product);
+        }
+        elseif ($product->hasField('field_event_reference')) {
+          $entity_id = $product->field_event_reference->getString();
+          $ref_entity = \Drupal::entityTypeManager()->getStorage('event')->load($entity_id);
+          if ($ref_entity->item_cost->getString() == 'priced') {
+            // Load the stored registration data from temporary storage.
+            $tempstore = \Drupal::service('tempstore.private')->get('heart_custom_forms');
+            $product_id = $product->id();
+            $product_type = $product->bundle();
+            $current_user_id = \Drupal::currentUser()->id();
+            $temp_store_key = 'registration_data_' . $product_type . $product_id . '_' . $current_user_id;
+            $current_user_mail = \Drupal::currentUser()->getEmail();
+            $registration_data = $tempstore->get($temp_store_key);
+            // Registered data exist and email is external.
+            if ($registration_data && $registration_data['email'] != $current_user_mail) {
+              $entity->set('field_external_register_mail', $registration_data['email']);
+            }
+            $entity->set('field_product_type', 'events');
+            $entity->set('field_product', $product);
+          }
+        }
+        elseif ($product->hasField('field_pdf_resource')) {
+          $entity_id = $product->field_pdf_resource->getString();
+          $ref_entity = \Drupal::entityTypeManager()->getStorage('pdf_resource')->load($entity_id);
+          if ($ref_entity->item_cost->getString() == 'priced') {
+            $entity->set('field_product_type', 'resource_library');
+            $entity->set('field_product', $product);
+          }
+        }
+        elseif ($product->hasField('field_referenced_video')) {
+          $entity_id = $product->field_referenced_video->getString();
+          $ref_entity = \Drupal::entityTypeManager()->getStorage('heart_video_resource')->load($entity_id);
+          if ($ref_entity->item_cost->getString() == 'priced') {
+            $entity->set('field_product_type', 'video_resource');
+            $entity->set('field_product', $product);
+          }
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_user_login().
+ */
+function heart_misc_user_login($account) {
+  // Check if we are on the checkout step with login.
+  $route_name = \Drupal::routeMatch()->getRouteName();
+  // If route is related to commerce cart.
+  if ($route_name == 'commerce_checkout.form') {
+    // Get the services needed.
+    $cart_provider = \Drupal::service('commerce_cart.cart_provider');
+    $store_storage = \Drupal::entityTypeManager()->getStorage('commerce_store');
+
+    // Load the default store.
+    $stores = $store_storage->loadMultiple();
+    $default_store = reset($stores);
+
+    if ($default_store) {
+      // Load the anonymous user's cart.
+      $current_cart = $cart_provider->getCart('default', $default_store, NULL);
+
+      // Load all carts for the authenticated user.
+      $auth_user_carts = $cart_provider->getCarts($account);
+
+      foreach ($auth_user_carts as $auth_user_cart) {
+
+        // If auth user's cart does not match the current cart, delete it.
+        if ($auth_user_cart->id() !== $current_cart->id()) {
+          $auth_user_cart->delete();
+        }
+      }
+
+      // If an current cart exists, assign it to the authenticated user.
+      if ($current_cart) {
+        $current_cart->set('uid', $account->id());
+        $current_cart->save();
+      }
+      else {
+        \Drupal::logger('custom_cart_replace')->notice('No anonymous cart found.');
+      }
+    }
+    else {
+      \Drupal::logger('custom_cart_replace')->notice('No default store found.');
+    }
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function heart_misc_theme($existing, $type, $theme, $path) {
+
+  // Set variables for template.
+  return [
+    'heart_my_video_resourse' => [
+      'variables' => [
+        'video_src_url' => '',
+        'label' => '',
+        'visible_start_date' => '',
+        'description' => '',
+      ],
+      'template' => 'heart-my-video-resourse',
+    ],
+  ];
+}
+
+/**
+ * Implements hook_node_access().
+ */
+function heart_misc_node_access(NodeInterface $node, $op, AccountInterface $account) {
+
+  // Check if the operation is 'view'. You can also check for 'update' or 'delete'.
+  if ($op === 'view' && $node->bundle() == 'landing_page') {
+
+    $nid = $node->id();
+    $allowed_roles = [];
+
+    if ($nid == '14') {
+      $allowed_roles = ['administrator', 'sales_staff', 'consultant'];
+    }
+    if ($nid == '19') {
+      $allowed_roles = ['administrator', 'parish_admin', 'facilitator', 'diocesan_admin'];
+    }
+    if ($nid == '13') {
+      $allowed_roles = ['administrator', 'content_editor'];
+    }
+
+    if (!empty($allowed_roles)) {
+      $currunt_user_roles = $account->getRoles();
+      $page_access = FALSE;
+      foreach ($currunt_user_roles as $currunt_user_role) {
+        if (in_array($currunt_user_role, $allowed_roles)) {
+          $page_access = TRUE;
+        }
+      }
+
+      if ($page_access) {
+        return AccessResult::allowed();
+      }
+      else {
+        return AccessResult::forbidden();
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_preprocess_breadcrumb().
+ */
+function heart_misc_preprocess_breadcrumb(&$variables) {
+  // Get the current path and route match.
+  $current_path = \Drupal::service('path.current')->getPath();
+  $route_match = \Drupal::service('current_route_match');
+  $route_name = $route_match->getRouteName();
+
+  // Check if the current route is the dynamic module-catelog route.
+  if (preg_match('/^formation-details\/\d+$/', trim($current_path, '/'))) {
+    // Add the Dashboard link.
+    $breadcrumb[] = [
+      'text' => t('Dashboard'),
+      'url' => Url::fromRoute('<front>'),
+    ];
+
+    // Add the Formation link.
+    $breadcrumb[] = [
+      'text' => t('Formation'),
+      // Adjust the route name accordingly.
+      'url' => Url::fromRoute('entity.node.canonical', ['node' => 11]),
+    ];
+
+    // Extract the webinar ID from the current path.
+    $segments = explode('/', trim($current_path, '/'));
+    $course_id = end($segments);
+
+    // Load the event entity to get the event title.
+    $heart_course = \Drupal::entityTypeManager()->getStorage('heart_course')->load($course_id);
+
+    if ($heart_course) {
+      $course_title = $heart_course->label->value;
+      // Add the course title to the breadcrumb.
+      $breadcrumb[] = [
+        'text' => t($course_title),
+        'url' => Url::fromUri('internal:' . $current_path, ['absolute' => TRUE])->toString(),
+      ];
+    }
+
+    // Set the breadcrumb.
+    $variables['breadcrumb'] = $breadcrumb;
+  }
+
+  // Breadcrumb for checkout page route.
+  if (preg_match('/^checkout\/\d+\/order_information$/', trim($current_path, '/'))) {
+    // Add the Dashboard link.
+    $breadcrumb[] = [
+      'text' => t('Dashboard'),
+      'url' => Url::fromRoute('<front>'),
+    ];
+
+    $breadcrumb[] = [
+      'text' => t('Check Out'),
+      'url' => Url::fromUri('internal:' . $current_path, ['absolute' => TRUE])->toString(),
+    ];
+
+    // Set the breadcrumb.
+    $variables['breadcrumb'] = $breadcrumb;
+  }
+
+  // Breadcrumb for review page route.
+  if (preg_match('/^checkout\/\d+\/review$/', trim($current_path, '/'))) {
+    // Add the Dashboard link.
+    $breadcrumb[] = [
+      'text' => t('Dashboard'),
+      'url' => Url::fromRoute('<front>'),
+    ];
+
+    $breadcrumb[] = [
+      'text' => t('Review Order'),
+      'url' => Url::fromUri('internal:' . $current_path, ['absolute' => TRUE])->toString(),
+    ];
+
+    // Set the breadcrumb.
+    $variables['breadcrumb'] = $breadcrumb;
+  }
+
+  // Breadcrumb for user/registration page route.
+  if (preg_match('/^user\/registration$/', trim($current_path, '/'))) {
+    // Add the Dashboard link.
+    $breadcrumb[] = [
+      'text' => t('Dashboard'),
+      'url' => Url::fromRoute('<front>'),
+    ];
+
+    $breadcrumb[] = [
+      'text' => t('Register'),
+      'url' => Url::fromUri('internal:' . $current_path, ['absolute' => TRUE])->toString(),
+    ];
+
+    // Set the breadcrumb.
+    $variables['breadcrumb'] = $breadcrumb;
+  }
+
+  // Breadcrumb for user-profile/edit page route.
+  if (preg_match('/^user-profile\/edit$/', trim($current_path, '/'))) {
+    // Add the Dashboard link.
+    $breadcrumb[] = [
+      'text' => t('Dashboard'),
+      'url' => Url::fromRoute('<front>'),
+    ];
+
+    $breadcrumb[] = [
+      'text' => t('Profile'),
+      'url' => Url::fromUri('internal:' . $current_path, ['absolute' => TRUE])->toString(),
+    ];
+
+    // Set the breadcrumb.
+    $variables['breadcrumb'] = $breadcrumb;
+  }
+
+  // Breadcrumb for /product-vault page route.
+  if (preg_match('/^product-vault$/', trim($current_path, '/'))) {
+    // Add the Dashboard link.
+    $breadcrumb[] = [
+      'text' => t('Dashboard'),
+      'url' => Url::fromRoute('<front>'),
+    ];
+
+    $breadcrumb[] = [
+      'text' => t('Management'),
+      'url' => Url::fromUri('internal:/manage-account', ['absolute' => TRUE])->toString(),
+    ];
+
+    $breadcrumb[] = [
+      'text' => t('Vault'),
+      'url' => Url::fromUri('internal:' . $current_path, ['absolute' => TRUE])->toString(),
+    ];
+
+    // Set the breadcrumb.
+    $variables['breadcrumb'] = $breadcrumb;
+  }
+}
+
+/**
+ * Implements hook_cron().
+ */
+function heart_misc_cron() {
+
+  $entity_type_manager = \Drupal::entityTypeManager();
+
+  $heart_progress_tracker_storage = $entity_type_manager->getStorage('heart_progress_tracker');
+  $query = $heart_progress_tracker_storage->getQuery()
+    ->condition('field_percent_completion', 80, '>=')
+    ->condition('field_certificate_generated', FALSE)
+    ->accessCheck(FALSE);
+  $heart_progress_tracker_entity_ids = $query->execute();
+
+  if (empty($heart_progress_tracker_entity_ids)) {
+    \Drupal::logger('heart_misc')->info('No heart progress found for certification generation.');
+    return;
+  }
+
+  // Load all matching entities.
+  $heart_progress_tracker_entities = $heart_progress_tracker_storage->loadMultiple($heart_progress_tracker_entity_ids);
+  $file_system = \Drupal::service('file_system');
+
+  foreach ($heart_progress_tracker_entities as $entity) {
+    // Ensure required references are available.
+    if (!$entity->field_product_ref->target_id || !$entity->field_user_ref->target_id) {
+      continue;
+    }
+
+    // Load the product entity.
+    $product_id = $entity->field_product_ref->target_id;
+    if (!$product_id) {
+      continue;
+    }
+    $product_entity = $entity_type_manager->getStorage('commerce_product')->load($product_id);
+    if (!$product_entity) {
+      continue;
+    }
+
+    // Extract product information.
+    $product_title = $product_entity->title->value;
+    $product_body = $product_entity->body->value;
+
+    // Load the user entity.
+    $user_id = $entity->field_user_ref->target_id;
+    if (!$user_id) {
+      continue;
+    }
+    $user_entity = $entity_type_manager->getStorage('user')->load($user_id);
+    if (!$user_entity) {
+      continue;
+    }
+
+    // Load user profile data.
+    $user_profile_entities = $entity_type_manager->getStorage('user_profile_data')->loadByProperties(['user_data' => $user_id]);
+    $user_profile_entity = reset($user_profile_entities);
+    if (!$user_profile_entity) {
+      continue;
+    }
+
+    // Extract user information.
+    $user_diocese = $user_profile_entity->user_diocese_field->target_id;
+    $user_parish = $user_profile_entity->user_parish_field->target_id;
+    $user_name = $user_entity->name->value;
+    $user_mail = $user_entity->mail->value;
+
+    // Prepare PDF content.
+    $pdf_content = "<h1>Certificate</h1>";
+    $pdf_content .= "<h2>Product: $product_title</h2>";
+    $pdf_content .= "<p><strong>Description:</strong> $product_body</p>";
+    $pdf_content .= "<h2>User: $user_name</h2>";
+    $pdf_content .= "<p><strong>Email:</strong> $user_mail</p>";
+    $pdf_content .= "<hr>";
+
+    // Generate PDF using mPDF.
+    $mpdf = new Mpdf();
+    $mpdf->WriteHTML($pdf_content);
+
+    // Define the directory and ensure it exists.
+    $directory = 'public://' . date('Y-m');
+    $file_system->prepareDirectory($directory, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
+
+    // Generate a unique file name.
+    $certificate_name = sprintf('%s_%s_certificate_%s.pdf', $user_name, $product_title, date('Y-m-d_H-i-s'));
+    $file_uri = $directory . '/' . $certificate_name;
+
+    try {
+      // Save the PDF to the file system.
+      $mpdf->Output($file_uri, Destination::FILE);
+
+      // Create the file entity.
+      $file = File::create([
+        'uid' => $user_id,
+        'uri' => $file_uri,
+        'filename' => $certificate_name,
+        'filemime' => 'application/pdf',
+        'status' => TRUE,
+      ]);
+      $file->save();
+
+      // Create the certificate entity.
+      $certificate_entity = $entity_type_manager->getStorage('heart_certificate')->create([
+        'title' => $product_title . ' Certificate',
+        'diocese_field' => $user_diocese,
+        'parish_field' => $user_parish,
+        'recipient' => $user_name,
+        'recipient_email' => $user_mail,
+        'upload_file' => ['target_id' => $file->id()],
+        'status' => TRUE,
+      ]);
+      $certificate_entity->save();
+
+      // Update the progress tracker entity to mark the certificate as generated.
+      $entity->set('field_certificate_generated', TRUE)->save();
+    }
+    catch (\Exception $e) {
+      \Drupal::logger('heart_misc')->error('Error generating or saving certificate for entity ID @id: @message', [
+        '@id' => $entity->id(),
+        '@message' => $e->getMessage(),
+      ]);
+      continue;
+    }
+  }
+
+  \Drupal::logger('heart_misc')->info('PDFs have been generated and saved successfully.');
+}
+
+/**
+ * Implements hook_menu_local_tasks_alter().
+ */
+function heart_misc_menu_local_tasks_alter(&$data, $route_name, RefinableCacheableDependencyInterface &$cacheability) {
+  if ($route_name == 'entity.user.edit_form') {
+    $alias = \Drupal::service('path_alias.manager')->getPathByAlias($_SERVER['REQUEST_URI']);
+    $params = Url::fromUri("internal:" . $alias)->getRouteParameters();
+
+    // Add a tab linking to node/add to all pages.
+    $data['tabs'][0]['edit_profile'] = [
+      '#theme' => 'menu_local_task',
+      '#link' => [
+        'title' => t('Show Profile'),
+        'url' => new Url('view.edit_user_profile_data.page_1', ['user' => $params['user']]),
+        'localized_options' => [
+          'attributes' => [
+            'title' => t('Show Profile'),
+            'target' => '_blank',
+          ],
+        ],
+        "#weight" => -5,
+      ],
+    ];
+    unset($data['tabs'][0]['entity.commerce_payment_method.collection']);
+  }
+}
+
+/**
+ * Implements hook_page_attachments().
+ */
+function heart_misc_page_attachments(array &$attachments) {
+
+  // Get current path.
+  $current_path = \Drupal::service('path.current')->getPath();
+  $current_path_alias = \Drupal::service('path_alias.manager')->getAliasByPath($current_path);
+
+  // Add library for manage diocese.
+  if ($current_path_alias == '/manage-account' || $current_path_alias == '/administrar-cuenta' || $current_path_alias == '/manage-students') {
+    $attachments['#attached']['library'][] = 'heart_custom_forms/heart_custom_forms';
+    $attachments['#attached']['library'][] = 'views/views.ajax';
+
+  }
+
+  // Enable to all pages.
+  $attachments['#attached']['library'][] = 'heart_misc/heart_misc';
+
+  // Add library for manage diocese.
+  if ($current_path_alias == '/sales-staff/manage' || $current_path_alias == '/personal-de-ventas/gestionar') {
+    $attachments['#attached']['library'][] = 'heart_custom_forms/heart_custom_forms';
+    $attachments['#attached']['library'][] = 'views/views.ajax';
+  }
+  // Add library for management dashboard.
+  if ($current_path_alias == '/management-dashboard' || $current_path_alias == '/panel-de-administración') {
+    $attachments['#attached']['library'][] = 'heart_custom_forms/heart_custom_forms';
+    $attachments['#attached']['library'][] = 'views/views.ajax';
+  }
+}

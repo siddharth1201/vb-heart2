@@ -1,0 +1,18 @@
+administer heart_zoom_webinars:
+  title: 'Administer zoom webinarss'
+  restrict access: true
+
+access registration report:
+  title: 'Access registration report action'
+  description: 'Allow users to execute the registration report action.'
+  restrict access: true
+
+access Q&A report:
+  title: 'Access Q&A report action'
+  description: 'Allow users to execute the Q&A report action.'
+  restrict access: true
+
+access Attendee report:
+  title: 'Access Attendee report action'
+  description: 'Allow users to execute the Attendee report action.'
+  restrict access: true

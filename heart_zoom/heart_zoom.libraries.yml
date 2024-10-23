@@ -1,0 +1,18 @@
+heart_zoom:
+  css:
+    theme
+      css/heart_zoom.css: {}
+  js:
+    js/heart_zoom.js:
+      # This section defines dependencies for the Drupal module.
+      # Dependencies are external libraries or modules that are required for this module to function correctly.
+      dependencies:
+        # Include the jQuery library from the Drupal core.
+        - core/jquery
+        # Include the jQuery Once plugin, which ensures that a function or code block is only executed once on the page.
+        - jquery_once/jquery.once
+        # Include the Drupal Dialog library, which provides a mechanism for creating modal dialogs.
+        - core/drupal.dialog
+
+
+

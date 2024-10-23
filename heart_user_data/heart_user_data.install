@@ -1,0 +1,62 @@
+<?php
+
+/**
+ * @file
+ * For creation of custom table.
+ */
+
+/**
+ * Install file for two custom tables.
+ */
+function heart_user_data_schema() {
+  $schema['heart_user_ref_data'] = [
+    'fields' => [
+      'id' => [
+        'description' => 'id',
+        'type' => 'int',
+        'length' => 11,
+        'not null' => TRUE,
+        'auto_increment' => TRUE,
+      ],
+      'uid' => [
+        'description' => 'User id',
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => NULL,
+      ],
+      'ref_entity_type' => [
+        'description' => 'Entity Type For Reference Entity',
+        'type' => 'varchar',
+        'length' => 255,
+        'null' => TRUE,
+        'default' => NULL,
+      ],
+      'ref_entity_id' => [
+        'description' => 'Reference entity id',
+        'type' => 'varchar',
+        'length' => 255,
+        'null' => TRUE,
+        'default' => NULL,
+      ],
+
+      'ref_entity_bundle' => [
+        'description' => 'Entity bundle of Reference Entity.',
+        'type' => 'varchar',
+        'length' => 255,
+        'null' => TRUE,
+        'default' => NULL,
+      ],
+
+      'created' => [
+        'description' => 'Created time.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => time(),
+      ],
+
+    ],
+    'primary key' => ['id'],
+  ];
+  return $schema;
+}

@@ -1,0 +1,178 @@
+{# {% for key,value in data %}
+  <strong>{{ key }}:</strong> {{ value }}<br>
+{% endfor %} #}
+<div class="zoom-webnar-personal">
+  <h2 class="font-size-18 fw-bold">{{ 'Personal'|t }}</h2>
+  <div class="personal border p-4 m-bottom-3">
+    <div class="fs-row align-items-center">
+      <div class="fs-col-5 text-right m-bottom-3">
+        {% if data.profile_image %}
+          <img src="{{ data.profile_image }}">
+        {% else %}
+          <img src="/{{ active_theme_path() }}/images/u12799.svg" alt="profile image">
+        {% endif %}
+      </div>
+      <div class="fs-col-7 font-size-18 m-bottom-3">
+        <div class="m-bottom-2 fw-bold">{{ data.sign_in_email }}</div>
+        <div class="text-gray m-bottom-2 set-value">{{ data.publisher }}</div>
+        <div>
+          <span class="text-gray">{{ 'Department'|t }}</span>
+          <span>{{ data.department }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="lower font-size-16">
+      <p>{{ 'When you join meetings, webinars, chats or channels hosted on Zoom, your profile information, including your name and profile picture, may be visible to other participants or members. Your name and email address will also be visible to the account owner and host when you join meetings, webinars, chats or channels on their account while you’re signed in. The account owner and others in the meeting, webinar, chat or channel can share this information with apps and others.'|t }}</p>
+    </div>
+  </div>
+</div>
+{# <div class="fieldset-wrapper">
+  <div class="field-item">
+    <label>{{ 'Phone'|t }}</label>
+    {% if data.phone %}
+      <span class="set-value">{{ data.phone }}</span>
+      <a class="btn edit-btn">{{ 'Edit'|t }}</a>
+    {% else %}
+      <span class="set-value">{{ 'Not Set'|t }}</span>
+      <a class="btn edit-btn">{{ 'Add Phone Number'|t }}</a>
+    {% endif %}
+    <div class="zoom-profile-inline-form">
+      <input type="text" class="edit-zoom-profile-phone" name="phone">
+      <a class="save-zoom-profile-phone save-zoom-profile-field">{{ 'Save'|t }}</a>
+    </div>
+  </div>
+  <div class="field-item">
+    <label>{{ 'Language'|t}}</label>
+    {% if data.language %}
+      <span class="set-value">{{ data.language }}</span>
+      <a class="btn edit-btn">{{ 'Edit'|t }}</a>
+    {% else %}
+      <span class="set-value">{{ 'Not Set'|t }}</span>
+      <a class="edit-zoom-profile-language edit-btn">{{ 'Add Language'|t }}</a>
+    {% endif %}
+    <div class="zoom-profile-inline-form">
+      <input type="text" class="edit-zoom-profile-language" name="language">
+      <a class="save-zoom-profile-language save-zoom-profile-field">{{ 'Save'|t }}</a>
+    </div>
+  </div>
+  <div class="field-item">
+    <label>{{ 'Time Zone'|t}}</label>
+    {% if data.timezone %}
+      <span class="set-value">{{ data.timezone }}</span>
+      <a class="btn edit-btn">{{ 'Edit'|t }}</a>
+    {% else %}
+      <span class="set-value">{{ 'Not Set'|t }}</span>
+      <a class="edit-zoom-profile-timezone edit-btn">{{ 'Add Time Zone'|t }}</a>
+    {% endif %}
+    <div class="zoom-profile-inline-form">
+      <input type="text" class="edit-zoom-profile-timezone" name="timezone">
+      <a class="save-zoom-profile-timezone save-zoom-profile-field">{{ 'Save'|t }}</a>
+    </div>
+  </div>
+  <div class="field-item">
+    <label>{{ 'Date Format'|t}}</label>
+    {% if data.date_format %}
+      <span class="set-value">{{ data.date_format }}</span>
+      <a class="btn edit-btn">{{ 'Edit'|t }}</a>
+    {% else %}
+      <span class="set-value">{{ 'mm/dd/yyyy Example: 09/25/2023'|t }}</span>
+      <a class="edit-zoom-profile-date_format edit-btn">{{ 'Add '|t }}</a>
+    {% endif %}
+    <div class="zoom-profile-inline-form">
+      <input type="text" class="edit-zoom-profile-date_format" name="date_format">
+      <a class="save-zoom-profile-date_format save-zoom-profile-field">{{ 'Save'|t }}</a>
+    </div>
+  </div>
+  <div class="field-item">
+    <label>{{ 'Time Format'|t}}</label>
+    {% if data.time_format %}
+      <span class="set-value">{{ data.time_format }}</span>
+      <a class="btn edit-btn">{{ 'Edit'|t }}</a>
+    {% else %}
+      <span class="set-value">{{ 'Use 12-hour time (Example: 02:00 PM)'|t }}</span>
+      <a class="edit-zoom-profile-time_format edit-btn">{{ 'Add '|t }}</a>
+    {% endif %}
+    <div class="zoom-profile-inline-form">
+      <input type="radio" class="edit-zoom-profile-time_format" name="time_format" value="12">
+      <label>{{ '12'|t}}</label>
+      <input type="radio" class="edit-zoom-profile-time_format" name="time_format" value="24">
+      <label>{{ '24'|t}}</label>
+      <a class="save-zoom-profile-time_format save-zoom-profile-field">{{ 'Save'|t }}</a>
+    </div>
+  </div>
+</div>
+<div class="fieldset-wrapper">
+  <lagend>{{ 'Meeting'|t }}</lagend>
+  <div class="row">
+    <strong>Data for Account to be Displayed</strong>
+  </div>
+</div>
+<div class="fieldset-wrapper">
+  <lagend>{{ 'Sign In'|t }}</lagend>
+  <div class="field-item">
+    <label>{{ 'Sign-In Email'|t }}</label>
+    {% if data.sign_in_email %}
+      <span class="set-value">{{ data.sign_in_email }}</span>
+      <a class="btn edit-btn">{{ 'Edit'|t }}</a>
+    {% else %}
+      <span class="set-value">{{ 'Not Set'|t }}</span>
+      <a class="btn edit-btn">{{ 'Add Sign-In Email'|t }}</a>
+    {% endif %}
+    <div class="zoom-profile-inline-form">
+      <input type="text" class="edit-zoom-profile-sign_in_email" name="sign_in_email">
+      <a class="save-zoom-profile-sign_in_email save-zoom-profile-field">{{ 'Save'|t }}</a>
+    </div>
+  </div>
+  <div class="field-item">
+    <label>{{ 'Sign-In Password'|t}}</label>
+    {% if data.sign_in_password %}
+      <span class="set-value">{{ data.sign_in_password }}</span>
+      <a class="btn edit-btn">{{ 'Edit'|t }}</a>
+    {% else %}
+      <span class="set-value">{{ 'Not Set'|t }}</span>
+      <a class="edit-zoom-profile-sign_in_password">{{ 'Add Sign-In Password'|t }}</a>
+    {% endif %}
+    <div class="zoom-profile-inline-form">
+      <input type="text" class="edit-zoom-profile-sign_in_password" name="sign_in_password">
+      <a class="save-zoom-profile-sign_in_password save-zoom-profile-field">{{ 'Save'|t }}</a>
+    </div>
+  </div>
+  <div class="field-item">
+    <label>{{ 'Two-Factor Authentication'|t}}</label>
+    {% if data.authentication == true %}
+      <span class="set-value">{{ 'On'|t}}</span>
+      <a class="btn edit-btn">{{ 'Turn Off'|t }}</a>
+    {% else %}
+      <span class="set-value">{{ 'Off'|t }}</span>
+      <a class="edit-zoom-profile-authentication edit-btn">{{ 'Turn On'|t }}</a>
+    {% endif %}
+    <div class="zoom-profile-inline-form">
+      <input type="radio" class="edit-zoom-profile-authentication" name="authentication" value="1">
+      <label>{{ 'On'|t}}</label>
+      <input type="radio" class="edit-zoom-profile-authentication" name="authentication" value="0">
+      <label>{{ 'Off'|t}}</label>
+      <a class="save-zoom-profile-authentication save-zoom-profile-field">{{ 'Save'|t }}</a>
+    </div>
+  </div>
+  <div class="field-item">
+    <label>{{ 'OPT Authentication'|t}}</label>
+    {% if data.otp %}
+      <span class="set-value">{{ data.otp }}</span>
+    {% else %}
+      <span class="set-value">{{ 'On'|t }}</span>
+    {% endif %}
+  </div>
+  <div class="field-item">
+    <a class="save-zoom-profile-sign-out-other-device save-zoom-profile-field">{{ 'Sign Me Out From All Devices'|t }}</a>
+  </div>
+</div>
+<div class="fieldset-wrapper">
+  <lagend>{{ 'Others'|t }}</lagend>
+  <div class="field-item">
+    <label>{{ 'Calendar and Contacts Integration'|t }}</label>
+    <div>
+      <p>{{ 'We support the following services: Google Calendar, Microsoft Exchange, and Microsoft Office 365 If you want to add your contacts by importing a CSV file, go to '|t }}<a href="#">{{ 'Personal Contacts'|t }}</a>.</p>
+      <p>{{ 'Configure Calendar and Contacts Services'|t }}</p>
+    </div>
+  </div>
+</div> #}

@@ -1,0 +1,297 @@
+<?php
+
+/**
+ * @file
+ * Module @file for heart_zoom.
+ */
+
+use Drupal\image\Entity\ImageStyle;
+use Drupal\user\Entity\User;
+use Drupal\Core\Render\Element;
+use Drupal\user\UserInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\views\ViewExecutable;
+use Drupal\zoomapi\Plugin\ApiTools;
+
+/**
+ * Implements hook_theme().
+ */
+function heart_zoom_theme() {
+
+  // Get the user id.
+  $user = User::load(\Drupal::currentUser()->id());
+  $user_id = $user->id();
+
+  $zoom_profile_data = [];
+
+  // Get the entity id.
+  $query = \Drupal::database()->select('zoom_profile_data_field_data', 'pd');
+  $query->fields('pd', ['id']);
+  $query->condition('pd.user_data', $user_id);
+  $result = $query->execute()->fetchAssoc();
+  if (!empty($result)) {
+    $entity_id = $result['id'];
+  } else {
+    $client = \Drupal::service('zoomapi.client');
+    $zoom_user = $client->get('users/me');
+
+    if (!empty($zoom_user)) {
+      $zoom_profile_data = [
+        'publisher' => t('Kendall Hunt Publishing'),
+        'department' => $zoom_user['dept'],
+        'sign_in_email' => $zoom_user['email'],
+      ];
+    }
+  }
+
+  // Get the zoom profile data.
+  if (!empty($entity_id)) {
+    $zoom_profile_entities = \Drupal::entityTypeManager()
+      ->getStorage('zoom_profile_data')
+      ->load($entity_id);
+  }
+  if (!empty($zoom_profile_entities)) {
+    $img_url = '';
+    if (isset($zoom_profile_entities->profile_image->entity)) {
+      $img_url = ImageStyle::load('medium')->buildUrl($zoom_profile_entities->profile_image->entity->getFileUri());
+    }
+
+    // Set the zoom profile data.
+    $zoom_profile_data = [
+      'phone' => $zoom_profile_entities->phone->getString(),
+      'profile_image' => $img_url,
+      'publisher' => $zoom_profile_entities->publisher->getString(),
+      'department' => $zoom_profile_entities->department->getString(),
+      'language' => $zoom_profile_entities->language->getString(),
+      'timezone' => $zoom_profile_entities->timezone->getString(),
+      'date_format' => $zoom_profile_entities->date_format->getString(),
+      'time_format' => $zoom_profile_entities->time_format->getString(),
+      'meeting_id' => $zoom_profile_entities->meeting_id->getString(),
+      'host_key' => $zoom_profile_entities->host_key->getString(),
+      'sign_in_email' => $zoom_profile_entities->sign_in_email->getString(),
+      'sign_in_password' => $zoom_profile_entities->sign_in_password->getString(),
+      'authentication' => $zoom_profile_entities->authentication->getString(),
+    ];
+  }
+
+  return [
+    'zoom_profile' => [
+      'variables' => [
+        'data' => $zoom_profile_data,
+      ],
+    ],
+    'heart_zoom_schedule_webinar_form' => [
+      'render element' => 'form',
+      'template' => 'heart-zoom-schedule-webinar',
+    ],
+  ];
+}
+
+/**
+ * Implements hook_page_attachments().
+ */
+function heart_zoom_page_attachments(array &$attachments) {
+  // $current_path = \Drupal::service('path.current')->getPath();
+  $attachments['#attached']['library'][] = 'heart_zoom/heart_zoom';
+}
+
+/**
+ * Implements hook_theme().
+ */
+// function heart_zoom_theme(): array {
+//   return [
+//     'heart_zoom_webinars' => ['render element' => 'elements'],
+//   ];
+// }
+
+/**
+ * Prepares variables for zoom webinars templates.
+ *
+ * Default template: heart-zoom-webinars.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - elements: An associative array containing the zoom webinars information and any
+ *     fields attached to the entity.
+ *   - attributes: HTML attributes for the containing element.
+ */
+function template_preprocess_heart_zoom_webinars(array &$variables): void {
+  $variables['view_mode'] = $variables['elements']['#view_mode'];
+  foreach (Element::children($variables['elements']) as $key) {
+    $variables['content'][$key] = $variables['elements'][$key];
+  }
+}
+
+/**
+ * Implements hook_user_cancel().
+ */
+function heart_zoom_user_cancel($edit, UserInterface $account, $method): void {
+  switch ($method) {
+    case 'user_cancel_block_unpublish':
+      // Unpublish zoom webinarss.
+      $storage = \Drupal::entityTypeManager()->getStorage('heart_zoom_webinars');
+      $heart_zoom_webinars_ids = $storage->getQuery()
+        ->condition('uid', $account->id())
+        ->condition('status', 1)
+        ->accessCheck(FALSE)
+        ->execute();
+      foreach ($storage->loadMultiple($heart_zoom_webinars_ids) as $heart_zoom_webinars) {
+        $heart_zoom_webinars->set('status', FALSE)->save();
+      }
+      break;
+
+    case 'user_cancel_reassign':
+      // Anonymize zoom webinarss.
+      $storage = \Drupal::entityTypeManager()->getStorage('heart_zoom_webinars');
+      $heart_zoom_webinars_ids = $storage->getQuery()
+        ->condition('uid', $account->id())
+        ->accessCheck(FALSE)
+        ->execute();
+      foreach ($storage->loadMultiple($heart_zoom_webinars_ids) as $heart_zoom_webinars) {
+        $heart_zoom_webinars->setOwnerId(0)->save();
+      }
+      break;
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_predelete() for user entities.
+ */
+function heart_zoom_user_predelete(UserInterface $account): void {
+  // Delete zoom webinarss that belong to this account.
+  $storage = \Drupal::entityTypeManager()->getStorage('heart_zoom_webinars');
+  $heart_zoom_webinars_ids = $storage->getQuery()
+    ->condition('uid', $account->id())
+    ->accessCheck(FALSE)
+    ->execute();
+  $storage->delete(
+    $storage->loadMultiple($heart_zoom_webinars_ids)
+  );
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function heart_zoom_form_alter(array &$form, FormStateInterface $form_state, $form_id) {
+  if (isset($form['#id'])) {
+
+    if ($form['#id'] == 'views-exposed-form-upcoming-webinars-block-2' ||
+        $form['#id'] == 'views-exposed-form-upcoming-webinars-block-1' ||
+        $form['#id'] == 'views-exposed-form-upcoming-webinars-block-3') {
+        if (isset($form['start_end_time_wrapper'])) {
+            $form['start_end_time_wrapper']['start_end_time_wrapper']['start_end_time']['min']['#title'] = t('Start Date');
+            $form['start_end_time_wrapper']['start_end_time_wrapper']['start_end_time']['max']['#title'] = t('End Date');
+
+            $form['#validate'][] = 'start_end_date_validate';
+        }
+        if (isset($form['start_time_wrapper'])) {
+          $form['start_time_wrapper']['start_time_wrapper']['start_time']['min']['#title'] = t('Start Date');
+          $form['start_time_wrapper']['start_time_wrapper']['start_time']['max']['#title'] = t('End Date');
+
+          $form['#validate'][] = 'start_end_date_validate';
+        }
+    }
+  }
+  if ($form_id == 'views_form_upcoming_webinars_block_3') {
+
+    $user_id = \Drupal::currentUser()->id();
+
+    /** @var \Drupal\Core\TempStore\PrivateTempStore $store */
+    $store = \Drupal::service('tempstore.private')->get('heart_zoom');
+    $reg_status_data = $store->get('reg_status_'.$user_id.'');
+    $page_size_data = $store->get('page_size_'.$user_id.'');
+
+    $form['reg_status'] = [
+      '#type' => 'radios',
+      '#title' => t('Generate Report'),
+      '#options' => ['all' => t('All Registrants'),
+        'approved' => t('Approved Registrants'),
+        'pending' => t('Pending Registrants'),
+        'denied' => t('Denied Registrants'),
+      ],
+      '#default_value' => 'all',
+    ];
+
+    // $form['page_size'] = [
+    //   '#type' => 'number',
+    //   '#title' => t('Limit'),
+    //   '#default_value' => 30,
+    //   '#placeholder' => '30',
+    //   '#maximum' => 300,
+    //   '#description' => t('Maximum number of registrants to return, maximum value is 300.'),
+    //   '#states' => [
+    //     'visible' => [
+    //       'select[name="action"]' => ['value' => '1'],
+    //     ],
+    //   ],
+    // ];
+    $form['#submit'][]  = 'vbo_custom_submit_handler';
+  }
+}
+
+/**
+ * Form validation handler.
+ *
+ * @param [type] $form
+ * @param FormStateInterface $form_state
+ * @return void
+ */
+function start_end_date_validate($form, FormStateInterface $form_state) {
+
+  $data = $form_state->getValues();
+  if (isset($data['start_end_time'])) {
+    $start = strtotime($data['start_end_time']['min']);
+    $end = strtotime($data['start_end_time']['max']);
+    if ((!empty($start) || !empty($end)) && ($start >= $end)) {
+      $form_state->setErrorByName('start_end_time', t('Please select correct dates.'));
+    }
+  }
+
+  if (isset($data['start_time'])) {
+    $start = strtotime($data['start_time']['min']);
+    $end = strtotime($data['start_time']['max']);
+    if ((!empty($start) || !empty($end)) && ($start >= $end)) {
+      $form_state->setErrorByName('start_time', t('Please select correct dates.'));
+    }
+  }
+}
+
+/**
+ * Form submission handler.
+ *
+ * @param [type] $form
+ * @param FormStateInterface $form_state
+ * @return void
+ */
+function vbo_custom_submit_handler($form, FormStateInterface $form_state) {
+
+  $data = $form_state->getValues();
+  $user_id = \Drupal::currentUser()->id();
+
+  /** @var \Drupal\Core\TempStore\PrivateTempStore $store */
+  $store = \Drupal::service('tempstore.private')->get('heart_zoom');
+  $store->set('reg_status_'.$user_id.'', $data['reg_status']);
+  // $store->set('page_size_'.$user_id.'', $data['page_size']);
+}
+
+/**
+ * Implements hook_views_data().
+ */
+function heart_zoom_views_data() {
+
+  $data['views']['table']['group'] = t('Custom Global');
+  $data['views']['table']['join'] = [
+    // #global is a special flag which allows a table to appear all the time.
+    '#global' => [],
+  ];
+
+  $data['views']['heart_zoom_registered'] = [
+    'title' => t('Registrations'),
+    'help' => t('Find the number of registered user for this event.'),
+    'field' => [
+      'id' => 'heart_zoom_registered',
+    ],
+  ];
+
+  return $data;
+}

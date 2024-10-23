@@ -1,0 +1,15 @@
+
+
+{% if video_src_url is defined %}
+    {{ video_src_url | raw }}
+{% else %}
+    <p>No video found.</p>
+{% endif %}
+
+ <h1>{{ label | raw  }}</h1>
+
+{% if visible_start_date is defined %}
+    {{ visible_start_date | date('F j, Y') }}
+{% endif %}
+
+{{ description | raw  }}

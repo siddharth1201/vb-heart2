@@ -1,0 +1,5 @@
+heart_zoom_webinars.add_form:
+  title: 'Add zoom webinars'
+  route_name: entity.heart_zoom_webinars.add_form
+  appears_on:
+    - entity.heart_zoom_webinars.collection

@@ -1,0 +1,14 @@
+services:
+  heart_misc.twig_extension:
+    class: Drupal\heart_misc\RLTwigExtension
+    tags:
+      - { name: twig.extension }
+    arguments: ['@entity_type.manager', '@heart_user_data.user_ref_data', '@current_user','@heart_webinar.event_registrants_service']
+
+  heart_misc.email_template_service:
+    class: Drupal\heart_misc\EmailTemplateService
+    arguments: ['@entity_type.manager', '@database']
+
+  heart_misc.send_mail_service:
+    class: Drupal\heart_misc\SendMailService
+    arguments: ['@entity_type.manager', '@database','@plugin.manager.mail','@messenger']

@@ -1,0 +1,10 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - heart_zoom
+id: heart_zoom_webinars_delete_action
+label: 'Delete zoom webinarss'
+type: heart_zoom_webinars
+plugin: entity:delete_action:heart_zoom_webinars
+configuration: {  }

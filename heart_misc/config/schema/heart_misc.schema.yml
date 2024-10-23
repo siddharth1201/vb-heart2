@@ -1,0 +1,8 @@
+# Schema for the configuration files of the Heart Misc module.
+heart_misc.settings:
+  type: config_object
+  label: 'Heart Misc settings'
+  mapping:
+    example:
+      type: string
+      label: 'Example'
